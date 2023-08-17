@@ -73,7 +73,15 @@ router.get('/api/characters/:id', async (request: IRequest, env: Env) => {
 
 	const connection = connect(config);
 
-	const data = await connection.execute(`SELECT * FROM characters WHERE id = ${id}`);
+	const query = `
+		SELECT characters.id, characters.name, characters.class,
+			(SELECT JSON_OBJECT('id', species.id, 'name', species.name, 'url', CONCAT('https://me-api.njwon4.workers.dev/api/species/', species.id)) FROM species WHERE species.id = characters.species) AS species,
+			(SELECT JSON_OBJECT('id', genders.id, 'name', genders.name, 'url', CONCAT('https://me-api.njwon4.workers.dev/api/genders/', genders.id)) FROM genders WHERE genders.id = characters.gender) AS gender
+		FROM characters
+		WHERE characters.id = ${id};
+	`;
+
+	const data = await connection.execute(query);
 
 	return new Response(JSON.stringify(data.rows), {
 		headers: {
