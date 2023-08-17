@@ -30,7 +30,7 @@ router.get('/api/characters', async (request: IRequest, env: Env) => {
 			(SELECT JSON_OBJECT('id', species.id, 'name', species.name, 'url', CONCAT('https://me-api.njwon4.workers.dev/api/species/', species.id)) FROM species WHERE species.id = characters.species) AS species,
 			(SELECT JSON_OBJECT('id', genders.id, 'name', genders.name, 'url', CONCAT('https://me-api.njwon4.workers.dev/api/genders/', genders.id)) FROM genders WHERE genders.id = characters.gender) AS gender
 		FROM characters
-		LIMIT ${limit}
+		LIMIT ${limit > 100 ? 100 : limit}
 		OFFSET ${offset};
 	`;
 
