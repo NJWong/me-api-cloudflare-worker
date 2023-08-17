@@ -25,6 +25,7 @@ router.get('/api/characters', async (request: IRequest, env: Env) => {
 	return new Response(JSON.stringify(data.rows), {
 		headers: {
 			'Content-Type': 'application/json',
+			'Access-Control-Allow-Origin': '*',
 		},
 	});
 });
@@ -52,6 +53,7 @@ router.get('/api/characters/:id', async (request: IRequest, env: Env) => {
 	return new Response(JSON.stringify(data.rows), {
 		headers: {
 			'Content-Type': 'application/json',
+			'Access-Control-Allow-Origin': '*',
 		},
 	});
 });
