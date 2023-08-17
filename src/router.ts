@@ -6,6 +6,11 @@ const router = Router();
 
 // GET all characters
 router.get('/api/characters', async (request: IRequest, env: Env) => {
+	const url = new URL(request.url);
+	const params = new URLSearchParams(url.search);
+	const limit = parseInt(params.get('limit') ?? '10') ?? 10;
+	const offset = parseInt(params.get('offset') ?? '0') ?? 0;
+
 	const config = {
 		host: env.DATABASE_HOST,
 		username: env.DATABASE_USERNAME,
@@ -20,9 +25,29 @@ router.get('/api/characters', async (request: IRequest, env: Env) => {
 
 	const connection = connect(config);
 
-	const data = await connection.execute('SELECT * FROM characters');
+	const query = `
+		SELECT characters.id, characters.name, characters.class,
+			(SELECT JSON_OBJECT('id', species.id, 'name', species.name, 'url', CONCAT('https://me-api.njwon4.workers.dev/api/species/', species.id)) FROM species WHERE species.id = characters.species) AS species,
+			(SELECT JSON_OBJECT('id', genders.id, 'name', genders.name, 'url', CONCAT('https://me-api.njwon4.workers.dev/api/genders/', genders.id)) FROM genders WHERE genders.id = characters.gender) AS gender
+		FROM characters
+		LIMIT ${limit}
+		OFFSET ${offset};
+	`;
 
-	return new Response(JSON.stringify(data.rows), {
+	const characterResult = await connection.execute(query);
+
+	const countResult = await connection.execute('SELECT COUNT(*) FROM characters');
+
+	const response = {
+		meta: {
+			limit,
+			offset,
+			total: parseInt(countResult.rows[0]['count(*)']),
+		},
+		data: characterResult.rows,
+	};
+
+	return new Response(JSON.stringify(response), {
 		headers: {
 			'Content-Type': 'application/json',
 			'Access-Control-Allow-Origin': '*',
