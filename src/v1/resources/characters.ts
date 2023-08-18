@@ -10,6 +10,7 @@ router.get('/', async (request: IRequest, env: Env) => {
 	const url = new URL(request.url);
 	const params = new URLSearchParams(url.search);
 	const limit = parseInt(params.get('limit') ?? '10') ?? 10;
+	const cappedLimit = limit > 100 ? 100 : limit;
 	const offset = parseInt(params.get('offset') ?? '0') ?? 0;
 
 	const config = {
@@ -31,7 +32,7 @@ router.get('/', async (request: IRequest, env: Env) => {
 			(SELECT JSON_OBJECT('id', species.id, 'name', species.name, 'url', CONCAT('${baseApiPath}/v1/species/', species.id)) FROM species WHERE species.id = characters.species) AS species,
 			(SELECT JSON_OBJECT('id', genders.id, 'name', genders.name, 'url', CONCAT('${baseApiPath}/v1/genders/', genders.id)) FROM genders WHERE genders.id = characters.gender) AS gender
 		FROM characters
-		LIMIT ${limit > 100 ? 100 : limit}
+		LIMIT ${cappedLimit}
 		OFFSET ${offset};
 	`;
 
@@ -41,7 +42,7 @@ router.get('/', async (request: IRequest, env: Env) => {
 
 	const response = {
 		meta: {
-			limit,
+			limit: cappedLimit,
 			offset,
 			total: parseInt(countResult.rows[0]['count(*)']),
 		},
