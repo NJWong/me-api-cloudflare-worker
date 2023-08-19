@@ -29,9 +29,11 @@ router.get('/', async (request: IRequest, env: Env) => {
 
 	const query = `
 		SELECT characters.id, characters.name, characters.class,
-			(SELECT JSON_OBJECT('id', species.id, 'name', species.name, 'url', CONCAT('${baseApiPath}/v1/species/', species.id)) FROM species WHERE species.id = characters.species) AS species,
-			(SELECT JSON_OBJECT('id', genders.id, 'name', genders.name, 'url', CONCAT('${baseApiPath}/v1/genders/', genders.id)) FROM genders WHERE genders.id = characters.gender) AS gender
+			JSON_OBJECT('id', species.id, 'name', species.name, 'url', CONCAT('${baseApiPath}/v1/species/', species.id)) AS species,
+			JSON_OBJECT('id', genders.id, 'name', genders.name, 'url', CONCAT('${baseApiPath}/v1/genders/', genders.id)) AS gender
 		FROM characters
+		JOIN species ON species.id = characters.species
+		JOIN genders ON genders.id = characters.gender
 		LIMIT ${cappedLimit}
 		OFFSET ${offset};
 	`;
