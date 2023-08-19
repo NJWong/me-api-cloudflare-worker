@@ -1,12 +1,14 @@
 import { Router } from 'itty-router';
 import charactersRouter from './resources/characters';
 import gendersRouter from './resources/genders';
+import speciesRouter from './resources/species';
 
 // Note, we must include the complete base path here
 const router = Router({ base: '/api/v1' });
 
 router.get('/characters/*', charactersRouter.handle);
 router.get('/genders/*', gendersRouter.handle);
+router.get('/species/*', speciesRouter.handle);
 
 // Show page that links to the docs
 router.all('*', () => {
